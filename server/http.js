@@ -4,9 +4,9 @@ import http from "http";
 import mime from "mime-types";
 
 const server = http.createServer(async (req, res) => {
-  // res.setHeader("Access-Control-Allow-Origin", "*");
-  // res.setHeader("Access-Control-Allow-Headers", "*");
-  // res.setHeader("Access-Control-Allow-Methods", "*");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  res.setHeader("Access-Control-Allow-Methods", "*");
   console.log(req.method);
   if (req.method === "GET") {
     if (req.url === "/favicon.ico") return res.end("No favicon.");

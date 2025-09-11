@@ -19,10 +19,13 @@ function App() {
 
 
   async function uploadFile(e) {
-    const file = e.target.files[0];
+    const filename = e.target.files[0]; //if user selects multiple files , then only firat file will be taken
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", URL, true); //true for async
-    xhr.setRequestHeader("filename", file.name); 
+    xhr.open(
+      "POST", //method
+     `${URL}/${filename}`, //request URL
+      true); //true for async
+    xhr.setRequestHeader("filename", filename.name); 
     xhr.addEventListener("load", () => {
       console.log(xhr.response);
       getDirectoryItems();
@@ -32,7 +35,7 @@ function App() {
       setProgress(totalProgress.toFixed(2));
     });
 
-    xhr.send(file);
+    xhr.send(filename); //sending the actual file as request body
     e.target.value = null; //to allow uploading the same file again if needed
   }
 

@@ -37,11 +37,10 @@ function App() {
   }
 
   async function handleDelete(filename) {
-    const response = await fetch(URL, {
+    const response = await fetch(`${URL}/${filename}`, {
       method: "DELETE",
-      body: filename,
     });
-    const data = await response.text();
+    const data = await response.text(); //response from the server is in json format but here we are sending plain text
     console.log(data);
     getDirectoryItems();
   }
@@ -53,9 +52,10 @@ function App() {
 
   async function saveFilename(oldFilename) {
     setNewFilename(oldFilename);
-    const response = await fetch(URL, {
+    const response = await fetch(`${URL}/${oldFilename}`, {
       method: "PATCH",
-      body: JSON.stringify({ oldFilename, newFilename }),
+      headers: { "Content-Type": "application/json" }, //only now express.json() middleware will work on the server
+      body: JSON.stringify({ newFilename }),
     });
     const data = await response.text();
     console.log(data);
@@ -76,12 +76,12 @@ function App() {
         {
           directoryItems.map((item, i) => (
           <div key={i}>
-          {item} <a href={`${URL}${item}?action=open`}>Open</a>{" "}
-          <a href={`${URL}${item}?action=download`}>Download</a>
+          {item} <a href={`${URL}/${item}?action=open`}>Open</a>{" "}
+          <a href={`${URL}/${item}?action=download`}>Download</a>
           <button onClick={() => renameFile(item)}>Rename</button>
           <button onClick={() => saveFilename(item)}>Save</button>
-          <button onClick={() => {handleDelete(item)}}>  Delete </button>
-          <br />
+          <button onClick={() => handleDelete(item)}>  Delete </button>
+          <br/>
          </div>
           ))
        }

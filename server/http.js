@@ -95,3 +95,4 @@ async function serveDirectory(req, res) {
 server.listen(80, () => {
   console.log("Server started");
 });
+

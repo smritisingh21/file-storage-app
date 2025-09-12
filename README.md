@@ -1,10 +1,13 @@
-A simple file storage web application built using React (frontend) and Express.js (backend).
+
+
+A simple file storage web application built using React (frontend) and Express.js (backend)
+In progress...
 
 ⚙️ Tech Stack
 ---------------
 Frontend: React, Fetch API / XMLHttpRequest
 Backend: Node.js, Express.js
-Storage: Local ./storage directory
+Storage: MongoDB , mongoose , redis , 
 
 🚀 Features
 --------------

@@ -5,9 +5,10 @@ In progress...
 
 ⚙️ Tech Stack
 ---------------
-Frontend: React, Fetch API / XMLHttpRequest
-Backend: Node.js, Express.js
-Storage: MongoDB , mongoose , redis , 
+1. Frontend: React, Fetch API / XMLHttpRequest
+2. Backend: Node.js, Express.js
+3. Database: MongoDB , mongoose , redis
+4. Auth : jwt , bcrypt
 
 🚀 Features
 --------------

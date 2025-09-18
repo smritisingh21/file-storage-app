@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import "./App.css";
+import { get } from "mongoose";
 
 function DirectoryView() {
   const BASE_URL = "http://localhost:4000"; //server port
@@ -9,10 +10,8 @@ function DirectoryView() {
   const [newFilename, setNewFilename] = useState("");
   const { "*": dirPath} = useParams(); //destructuring frontend path
 
-    useEffect(() => { // on component mount
-    getDirectoryItems(); 
-    }, []);
-
+   
+  
   async function getDirectoryItems() {
     const response = await fetch(`${BASE_URL}/directory/${dirPath}`,{
       method : 'GET'
@@ -20,6 +19,11 @@ function DirectoryView() {
     const data = await response.json();
     setDirectoryItems(data);
   }
+    useEffect(() => { // on component mount
+    getDirectoryItems(); 
+    }, [dirPath]);
+      //dependency variable has to be given because now we are using </Link> and
+    //the api is not called again otherwise and component is not re rendered with chanegin url
 
 
   async function uploadFile(e) {
@@ -43,7 +47,7 @@ function DirectoryView() {
     });
     xhr.send(file); //sending the actual file as request body
     e.target.value = null; //to allow uploading the same file again if needed
-
+    getDirectoryItems();
   }
 
   async function handleDelete(filename) {
@@ -84,23 +88,19 @@ function DirectoryView() {
       />
       <p>Progress: {progress}%</p>
         {
-          directoryItems.map(({name , isDir}) => ( //destructuring name from backend
+          directoryItems.map(({name,isDir}) => ( //destructuring name from backend
           <div key={name}>
           
           {name}{" "}
           
-          { isDir &&  //go to /images on opening a folder
-          <a href={`./${name}`}>Open</a>
-
-          } 
+          {isDir && <Link to={`${BASE_URL}/directory${dirPath}/${name}?action=open`}>Open</Link>}
           
-          { !isDir &&  //remove download button for directories
-          <a href={`${BASE_URL}/files/${name}?action=download`}>Open</a>
+          { !isDir &&  
+          <Link to={`${BASE_URL}/files${dirPath}/${name}?action=open`}> Open</Link>
           } {" "}
           { !isDir &&  //remove download button for directories
-          <a href={`${BASE_URL}/files/${name}?action=download`}>Download</a>
+          <Link to={`${BASE_URL}/files${dirPath}/${name}?action=download`}> Download</Link>
           } 
-
           <button onClick={() => renameFile(name)}>Rename</button>
           <button onClick={() => saveFilename(name)}>Save</button>
           <button onClick={() => handleDelete(name)}>  Delete </button>

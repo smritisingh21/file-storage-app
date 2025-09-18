@@ -11,9 +11,11 @@ app.use(express.json()); //middleware to parse JSON bodies
 app.use(cors()); //middleware to enable CORS
 
 
+
 // Serving Dir Content
-app.get("/directory/:dirname?", async (req, res) => {
-  const {dirname} = req.params;
+app.get("/directory?/*", async (req, res) => { //multiple level
+  const { 0 : dirname} = req.params;
+  console.log(dirname);
   const fullDirPath = `./storage/${dirname ? dirname : ""}`
   const filesList = await readdir(fullDirPath);
   const directoryItems = [];
@@ -28,14 +30,17 @@ app.get("/directory/:dirname?", async (req, res) => {
 });
 
 //serving dynamic files
-app.get ("/files/:filename" ,(req,res,next) => {
-  const { filename } = req.params; //here req.params contains the dynamic segments of the URL after the /
+app.get ("/files/?*" ,(req,res,next) => {
+  const { 0 : filename } = req.params; //here req.params contains the dynamic segments of the URL after the /
+  console.log(req.params);
   if(req.query.action === "download") {
     res.set("Content-Disposition", `attachment; filename="${filename}"`);
   }
-  const filePath = path.resolve(`./storage/${filename}`);
-  res.sendFile(filePath)
+  const filePath = path.resolve(`${import.meta.dirname}/storage/${filename}`);
+  res.sendFile(filePath);
  });
+
+
 //upload 
 app.post ("/files/:filename", (req, res) => {
   const {filename }= req.params; //getting the filename from the request headers
@@ -60,8 +65,8 @@ app.delete("/files/:filename", async (req, res) => {
   console.log(filename);
   const filePath = `./storage/${filename}`;
   try {
-    await rm(filePath);
-    return res.json({message :"File deleted successfully"});
+    await rm(filePath  , {recursive:true}) //recursive: true is an option you can pass in some Node.js fs (filesystem) methods to tell them to work recursively through directories — meaning they will automatically create or delete parent folders as needed, or remove entire folder trees.
+    return res.json({message :"Deleted successfully"});
   } catch (err) {
     return res.json(err.message);
   }

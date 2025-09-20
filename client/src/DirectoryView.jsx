@@ -8,36 +8,33 @@ function DirectoryView() {
   const [directoryItems, setDirectoryItems] = useState([]);
   const [progress, setProgress] = useState(0);
   const [newFilename, setNewFilename] = useState("");
+  const [title, setTitle] = useState("");
+  const [newDirname, setNewDirname] = useState("");
   const { "*": dirPath} = useParams(); //destructuring frontend path
 
    
   
   async function getDirectoryItems() {
-    const response = await fetch(`${BASE_URL}/directory/${dirPath}`,{
-      method : 'GET'
-    });
-    const data = await response.json();
-    setDirectoryItems(data);
+    const response = await fetch(`${BASE_URL}/directory/${dirPath}`);
+    const {dirname , directoryItems} = await response.json()
+    setTitle(dirname);
+    setDirectoryItems(directoryItems);
   }
-    useEffect(() => { // on component mount
+
+    useEffect(() => { 
     getDirectoryItems(); 
     }, [dirPath]);
-      //dependency variable has to be given because now we are using </Link> and
-    //the api is not called again otherwise and component is not re rendered with chanegin url
-
+     
 
   async function uploadFile(e) {
     const file = e.target.files[0]; //if user selects multiple files , then only firat file will be taken
-    console.log("file name : ", file.name);
     const xhr = new XMLHttpRequest();
     xhr.open(
       "POST", //method
-     `${BASE_URL}/files/${file.name}`, //request BASE_URL
+     `${BASE_URL}/files/${dirPath}/${file.name}`, //request BASE_URL
       true); //true for async
-    xhr.setRequestHeader("filename", file.name); 
 
     xhr.addEventListener("load", () => {
-      console.log("File uploaded successfully");
       console.log(xhr.response);
       getDirectoryItems();
     });
@@ -54,8 +51,7 @@ function DirectoryView() {
     const response = await fetch(`${BASE_URL}/files/${filename}`, {
       method: "DELETE",
     });
-    const data = await response.text(); //response from the server is in json format but here we are sending plain text
-    console.log(data);
+    const data = await response.json(); //response from the server is in json format but here we are sending plain text
     getDirectoryItems();
   }
 
@@ -76,35 +72,69 @@ function DirectoryView() {
     setNewFilename("");
     getDirectoryItems();
   }
+  async function handleCreateDirectory(e){
+    e.preventDefault();
+    const url = `${BASE_URL}/directory${dirPath ? "/" + dirPath : ""}/${newDirname}`;
+    console.log(url);
+    const response = await fetch(url , {
+        method : "POST"
+      })
+      const data= await response.json();
+      console.log(data);
+      setNewDirname("");
+      getDirectoryItems();
+  }
 
   return (
     <>
-      <h1>My Files</h1>
-      <input type="file" onChange={uploadFile} />
-      <input
-        type="text"
-        onChange={(e) => setNewFilename(e.target.value)}
-        value={newFilename}
-      />
+     
       <p>Progress: {progress}%</p>
+      <br/>
+      
+      <b>Upload your files</b>
+      <br/>
+      <br/>
+      <input type="file" onChange={uploadFile}/>
+      <br/>
+      <br/>
+      <form onSubmit={handleCreateDirectory}  >
+        <input 
+        placeholder="New Folder" 
+        type="text" 
+        onChange = {(e) => setNewDirname(e.target.value)} 
+        value= {newDirname} >
+      </input>
+      <button>Create</button>
+      </form>
+      <br/>
+       <input
+             type="text"
+             onChange={(e) => setNewFilename(e.target.value)}
+              value={newFilename}
+              />
+          <h3>{ title }</h3>
         {
-          directoryItems.map(({name,isDir}) => ( //destructuring name from backend
+          directoryItems.map(({ name, isDir}) => ( //destructuring name from backend
           <div key={name}>
           
           {name}{" "}
           
-          {isDir && <Link to={`${BASE_URL}/directory${dirPath}/${name}?action=open`}>Open</Link>}
-          
+          {isDir && <Link to={`./${name}`}>Open</Link>}
           { !isDir &&  
-          <Link to={`${BASE_URL}/files${dirPath}/${name}?action=open`}> Open</Link>
-          } {" "}
+          <a href={`${BASE_URL}/files/${dirPath}/${name}?action=open`}>
+              Open
+            </a>}{" "}
           { !isDir &&  //remove download button for directories
-          <Link to={`${BASE_URL}/files${dirPath}/${name}?action=download`}> Download</Link>
+          <a href={`${BASE_URL}/files/${dirPath}/${name}?action=download`}>
+              Download
+            </a>
           } 
           <button onClick={() => renameFile(name)}>Rename</button>
           <button onClick={() => saveFilename(name)}>Save</button>
           <button onClick={() => handleDelete(name)}>  Delete </button>
+            
           <br/>
+       
          </div>
           ))
        }

@@ -4,7 +4,7 @@ import "./App.css";
 import { get } from "mongoose";
 
 function DirectoryView() {
-  const BASE_URL = "http://localhost:4000"; //server port
+  const BASE_URL = "http://localhost:8080"; //server port
   const [directoryItems, setDirectoryItems] = useState([]);
   const [progress, setProgress] = useState(0);
   const [newFilename, setNewFilename] = useState("");
@@ -13,7 +13,6 @@ function DirectoryView() {
   const { "*": dirPath} = useParams(); //destructuring frontend path
 
    
-  
   async function getDirectoryItems() {
     const response = await fetch(`${BASE_URL}/directory/${dirPath}`);
     const {dirname , directoryItems} = await response.json()
@@ -112,6 +111,7 @@ function DirectoryView() {
              onChange={(e) => setNewFilename(e.target.value)}
               value={newFilename}
               />
+
           <h3>{ title }</h3>
         {
           directoryItems.map(({ name, isDir}) => ( //destructuring name from backend
@@ -125,7 +125,7 @@ function DirectoryView() {
               Open
             </a>}{" "}
           { !isDir &&  //remove download button for directories
-          <a href={`${BASE_URL}/files/${dirPath}/${name}?action=download`}>
+          <a href={`${BASE_URL}/files${dirPath}/${name}?action=download`}>
               Download
             </a>
           } 

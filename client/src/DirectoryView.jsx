@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import "./App.css";
-import { get } from "mongoose";
 
 function DirectoryView() {
   const BASE_URL = "http://localhost:8080"; //server port
@@ -30,7 +29,7 @@ function DirectoryView() {
     const xhr = new XMLHttpRequest();
     xhr.open(
       "POST", //method
-     `${BASE_URL}/files/${dirPath}/${file.name}`, //request BASE_URL
+     `${BASE_URL}/file${dirPath}/${file.name}`, //request BASE_URL
       true); //true for async
 
     xhr.addEventListener("load", () => {
@@ -47,7 +46,7 @@ function DirectoryView() {
   }
 
   async function handleDelete(filename) {
-    const response = await fetch(`${BASE_URL}/files/${filename}`, {
+    const response = await fetch(`${BASE_URL}/file/${filename}`, {
       method: "DELETE",
     });
     const data = await response.json(); //response from the server is in json format but here we are sending plain text
@@ -61,7 +60,7 @@ function DirectoryView() {
 
   async function saveFilename(oldFilename) {
     setNewFilename(oldFilename);
-    const response = await fetch(`${BASE_URL}/files/${oldFilename}`, {
+    const response = await fetch(`${BASE_URL}/file/${oldFilename}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" }, //only now express.json() middleware will work on the server
       body: JSON.stringify({ newFilename }),
@@ -114,7 +113,7 @@ function DirectoryView() {
 
           <h3>{ title }</h3>
         {
-          directoryItems.map(({ name, isDir}) => ( //destructuring name from backend
+          directoryItems.map(({ name , isDir}) => ( //destructuring name from backend
           <div key={name}>
           
           {name}{" "}
@@ -125,7 +124,7 @@ function DirectoryView() {
               Open
             </a>}{" "}
           { !isDir &&  //remove download button for directories
-          <a href={`${BASE_URL}/files${dirPath}/${name}?action=download`}>
+          <a href={`${BASE_URL}/files/${dirPath}/${name}?action=download`}>
               Download
             </a>
           } 

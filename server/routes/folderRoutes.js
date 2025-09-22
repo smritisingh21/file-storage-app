@@ -22,7 +22,7 @@ router.get("/?*", async (req, res) => { //multiple level
        isDir : stats.isDirectory()
       })
   }
-  res.json({dirname,directoryItems});
+  res.json({dirname , directoryItems});
 }catch(err){
   res.json({err : err.message})
 }}); 

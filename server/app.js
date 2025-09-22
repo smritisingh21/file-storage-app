@@ -8,7 +8,7 @@ const app = express();
 app.use(express.json()); //middleware to parse JSON bodies
 app.use(cors()); //middleware to enable CORS
 
-app.use("/files" , fileRoutes);
+app.use("/file" , fileRoutes);
 app.use("/directory" , folderRoutes)
 
 

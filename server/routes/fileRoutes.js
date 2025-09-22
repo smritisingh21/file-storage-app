@@ -1,35 +1,58 @@
 import express from "express";
 import { createWriteStream } from "fs";
-import { rename, rm } from "fs/promises";
+import { rename, rm ,writeFile} from "fs/promises";
 import path from "path";
+
+import filesData from "../filesDB.json" with {type:"json"}
 
 const router = express.Router();
 
-//serving dynamic files
-router.get ("/*" ,(req,res,next) => {
-  const filename  = req.params[0];
-  const filePath = path.join("/" , filename);
-  console.log(("opened file : " , filename));
+// Create
+router.post("/:filename",async (req, res) => {
+  const { filename } = req.params;
+  const id = crypto.randomUUID();
+  const extension = path.extname(filename);
+  const fullFileName = `${id}${extension}`;
+  const writeStream = createWriteStream(`./storage/${fullFileName}`);
+  req.pipe(writeStream);
+  req.on("end", async () => {
+    filesData.push({
+      id,
+      extension,
+      name: filename
+    })
+    console.log(filesData);
+    await writeFile('./filesDB.json', JSON.stringify(filesData))
+    res.json({ message: "File Uploaded" });
+  });
+});
+
+//Read
+router.get ("/:id" ,(req,res,next) => {
+  const {id}  = req.params;
+  const fileData = filesData.find((file)=> file.id===id);
   if(req.query.action === "download") {
-    res.set("Content-Disposition", `attachment; filename="${filename}"`);
+    res.set("Content-Disposition", `attachment; filename="${fileData.extension}"`);
   }
 
-  res.sendFile(path.resolve(`${process.cwd()}/storage/${filePath}`));
+  res.sendFile(`${process.cwd()}/storage/${id}${fileData.extension}`,(err) =>{
+    if(err){
+      res.json({error : "File not found"})
+    }
+  })
  });
 
+//Update
+router.patch("/:id", async (req, res) => {
+  const { id } = req.params;
+  const fileData = filesData.find((file)=> file.id===id);
+  console.log(fileData);
+   await writeFile('./filesDB.json', JSON.stringify(fileData))
+  res.json({message : "renamed"});
 
-//upload files
-router.post ("/*", (req, res) => {
-  try{
-  const fileLocation= `./storage/${path.join("/" , req.params[0])}`; //defining the path where the file will be stored
-  const writeStream = createWriteStream(fileLocation); //creating a writable stream to the specified file path
-  req.pipe(writeStream); //piping the request data to the writable stream
-  res.json({message :`uploaded file : ${req.params[0]}`})
-  }catch(err){
-    res.json({message : "upload failed"});
-  }});
+});
 
-//delete file
+//Delete
 router.delete("/*", async (req, res) => {
   const filename = req.params[0];
   console.log(`deleted file : ${filename}`);
@@ -40,19 +63,6 @@ router.delete("/*", async (req, res) => {
   } catch (err) {
     return res.json(err.message);
   }
-});
-
-//rename
-router.patch("/*", async (req, res) => {
-  const { 0: filename } = req.params;
-  const { newFilename } = req.body;
-  try{
-    await rename(`./storage/${filename}`,`./storage/${newFilename}`);
-    return res.json({message: "File renamed successfully"});
-  }catch(err){
-    return res.json(err.message);
-  }
-
 });
 
 

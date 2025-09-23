@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import "./App.css";
 
 function DirectoryView() {
-  const BASE_URL = "http://localhost:8080"; //server port
+  const BASE_URL = "http://localhost:4000"; //server port
   const [directoryItems, setDirectoryItems] = useState([]);
   const [progress, setProgress] = useState(0);
   const [newFilename, setNewFilename] = useState("");
@@ -113,7 +113,7 @@ function DirectoryView() {
 
           <h3>{ title }</h3>
         {
-          directoryItems.map(({ name , isDir}) => ( //destructuring name from backend
+          directoryItems.map(({name , isDir}) => ( //destructuring from each item
           <div key={name}>
           
           {name}{" "}

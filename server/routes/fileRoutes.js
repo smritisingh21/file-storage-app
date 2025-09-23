@@ -2,7 +2,7 @@ import express from "express";
 import { createWriteStream } from "fs";
 import { rename, rm ,writeFile} from "fs/promises";
 import path from "path";
-
+import directoriesData from "../directoriesDB.json" with {type:"json"}
 import filesData from "../filesDB.json" with {type:"json"}
 
 const router = express.Router();
@@ -15,12 +15,20 @@ router.post("/:filename",async (req, res) => {
   const fullFileName = `${id}${extension}`;
   const writeStream = createWriteStream(`./storage/${fullFileName}`);
   req.pipe(writeStream);
+
+  const { parentDirId} = req.headers || directoriesData[0].id; //parentDirid is sent by the user || root directory 
   req.on("end", async () => {
     filesData.push({
       id,
       extension,
-      name: filename
+      name: filename,
+      parentDirId 
     })
+    //adding file id into directory data
+    const parentDirdata = directoriesData.find((data ) =>{
+      data.id === parentDirId;
+    })
+    parentDirdata.files.push(id);
     console.log(filesData);
     await writeFile('./filesDB.json', JSON.stringify(filesData))
     res.json({ message: "File Uploaded" });
@@ -30,7 +38,7 @@ router.post("/:filename",async (req, res) => {
 //Read
 router.get ("/:id" ,(req,res,next) => {
   const {id}  = req.params;
-  const fileData = filesData.find((file)=> file.id===id);
+  const fileData = filesData.find((file)=> file.id=== id);
   if(req.query.action === "download") {
     res.set("Content-Disposition", `attachment; filename="${fileData.extension}"`);
   }
@@ -53,12 +61,20 @@ router.patch("/:id", async (req, res) => {
 });
 
 //Delete
-router.delete("/*", async (req, res) => {
-  const filename = req.params[0];
-  console.log(`deleted file : ${filename}`);
-  const filePath = `./storage/${filename}`;
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+  const fileIndex = filesData.findIndex((file)=> file.id === id); //find fileIndex in db, array returned
+  const fileData = filesData[fileIndex]; //
+
   try {
-    await rm(filePath  , {recursive:true}) //recursive: true is an option you can pass in some Node.js fs (filesystem) methods to tell them to work recursively through directories — meaning they will automatically create or delete parent folders as needed, or remove entire folder trees.
+  filesData.splice(file , 1);  //removing file
+
+  const parentDir = directoriesData.find((directory) => directory.id === fileData.parentDirId ); //finding parent directory
+  parentDir.files.filter((fileId) => fileId != id) //removing file from parent Directory
+  
+  //saving
+  await writeFile('./directoriesDB.json', JSON.stringify(directoriesData));
+  await writeFile('./filesDB.json', JSON.stringify(fileData));
     return res.json({message :"Deleted successfully"});
   } catch (err) {
     return res.json(err.message);

@@ -2,21 +2,14 @@
     {
         "id": "b843e0ec-a104-4130-8b77-dd647a4f3e7e",
         "extension": ".pdf",
-        "name": "Resume_SmritiSingh.pdf"
+        "name": "Resume_SmritiSingh.pdf",
+        "parentDirId" : 1
     },
     {
         "id": "c49e9908-5537-4b51-87fc-04072cad59d2",
         "extension": ".jpg",
-        "name": "IMG_20230507_174155.jpg"
-    },
-    {
-        "id": "7fba8c6f-a885-46fa-9744-ffd97329d09b",
-        "extension": ".png",
-        "name": "cusj8oMJ_400x400-removebg-preview (1).png"
-    },
-    {
-        "id": "bbaa984b-cf60-44df-b368-bef8e692ba14",
-        "extension": ".png",
-        "name": "avatar_1729448874.png"
+        "name": "IMG_20230507_174155.jpg",
+        "parentDirId" : 1
     }
+   
 ]

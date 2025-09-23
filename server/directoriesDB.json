@@ -1,0 +1,20 @@
+[
+    {
+        "id" : "1",
+        "name":"root",
+        "parenDirId" :null,
+        "files" :[
+            "b843e0ec-a104-4130-8b77-dd647a4f3e7e",
+             "c49e9908-5537-4b51-87fc-04072cad59d2"
+         ]
+        
+    },{
+        "id" : "1",
+        "name":"root",
+        "parenDirId" :"1",
+        "files" :[
+            "b843e0ec-a104-4130-8b77-dd647a4f3e7e",
+             "c49e9908-5537-4b51-87fc-04072cad59d2"
+         ]
+        }
+]

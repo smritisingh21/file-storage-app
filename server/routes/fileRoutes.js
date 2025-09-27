@@ -1,6 +1,6 @@
 import express from "express";
 import { createWriteStream } from "fs";
-import { rename, rm ,writeFile} from "fs/promises";
+import { writeFile , rm} from "fs/promises";
 import path from "path";
 import directoriesData from "../directoriesDB.json" with {type:"json"}
 import filesData from "../filesDB.json" with {type:"json"}
@@ -16,7 +16,7 @@ router.post("/:filename",async (req, res) => {
   const writeStream = createWriteStream(`./storage/${fullFileName}`);
   req.pipe(writeStream);
 
-  const { parentDirId} = req.headers || directoriesData[0].id; //parentDirid is sent by the user || root directory 
+  const parentDirId = req.headers.parentDirId || directoriesData[0].id; //parentDirid is sent by the user || root directory 
   req.on("end", async () => {
     filesData.push({
       id,
@@ -24,13 +24,14 @@ router.post("/:filename",async (req, res) => {
       name: filename,
       parentDirId 
     })
+
     //adding file id into directory data
-    const parentDirdata = directoriesData.find((data ) =>{
-      data.id === parentDirId;
-    })
+
+    const parentDirdata = directoriesData.find((data) => data.id === parentDirId);
     parentDirdata.files.push(id);
     console.log(filesData);
     await writeFile('./filesDB.json', JSON.stringify(filesData))
+    await writeFile('./directoriesDB.json', JSON.stringify(directoriesData))
     res.json({ message: "File Uploaded" });
   });
 });
@@ -40,11 +41,10 @@ router.get ("/:id" ,(req,res,next) => {
   const {id}  = req.params;
   const fileData = filesData.find((file)=> file.id=== id);
   if(req.query.action === "download") {
-    res.set("Content-Disposition", `attachment; filename="${fileData.extension}"`);
+    res.set("Content-Disposition", `attachment; filename="${fileData.name}"`);
   }
-
   res.sendFile(`${process.cwd()}/storage/${id}${fileData.extension}`,(err) =>{
-    if(err){
+    if(!res.headersSent){
       res.json({error : "File not found"})
     }
   })
@@ -52,32 +52,51 @@ router.get ("/:id" ,(req,res,next) => {
 
 //Update
 router.patch("/:id", async (req, res) => {
-  const { id } = req.params;
-  const fileData = filesData.find((file)=> file.id===id);
-  console.log(fileData);
-   await writeFile('./filesDB.json', JSON.stringify(fileData))
-  res.json({message : "renamed"});
+   const {id} = req.params;
+  const fileData = filesData.find((file) => file.id === id)
+  fileData.name = req.body.newFilename
+  await writeFile('./filesDB.json', JSON.stringify(filesData))
+  res.json({ message: "Renamed" });
 
 });
 
 //Delete
-router.delete("/:id", async (req, res) => {
-  const { id } = req.params;
-  const fileIndex = filesData.findIndex((file)=> file.id === id); //find fileIndex in db, array returned
-  const fileData = filesData[fileIndex]; //
+// router.delete("/:id", async (req, res) => {
+//   const { id } = req.params;
+//   const fileIndex = filesData.findIndex((file)=> file.id === id); //find fileIndex in db, array returned
+//   const fileData = filesData[fileIndex]; 
 
-  try {
-  filesData.splice(file , 1);  //removing file
+//   try {
+//   filesData.splice(file , 1);  //removing file
 
-  const parentDir = directoriesData.find((directory) => directory.id === fileData.parentDirId ); //finding parent directory
-  parentDir.files.filter((fileId) => fileId != id) //removing file from parent Directory
+//   const parentDir = directoriesData.find((directory) => directory.id === fileData.parentDirId ); //finding parent directory
+//   parentDir.files.filter((fileId) => fileId != id) //removing file from parent Directory
   
-  //saving
-  await writeFile('./directoriesDB.json', JSON.stringify(directoriesData));
-  await writeFile('./filesDB.json', JSON.stringify(fileData));
-    return res.json({message :"Deleted successfully"});
+//   //saving
+//   await writeFile('./directoriesDB.json', JSON.stringify(directoriesData));
+//   await writeFile('./filesDB.json', JSON.stringify(fileData));
+//     return res.json({message :"Deleted successfully"});
+//   } catch (err) {
+//     return res.json(err.message);
+//   }
+// });
+
+// Delete
+router.delete("/:id", async (req, res) => {
+  const {id} = req.params
+  const fileIndex = filesData.findIndex((file) => file.id === id)
+  const fileData = filesData[fileIndex]
+  try {
+    await rm(`./storage/${id}${fileData.extension}`, { recursive: true });
+    filesData.splice(fileIndex, 1)
+    const parentDirData = directoriesData.find((directoryData) => directoryData.id === fileData.parentDirId)
+    parentDirData.files = parentDirData.files.filter((fileId) => fileId !== id)
+    console.log(parentDirData.files);
+    await writeFile('./filesDB.json', JSON.stringify(filesData))
+    await writeFile('./directoriesDB.json', JSON.stringify(directoriesData))
+    res.json({ message: "File Deleted Successfully" });
   } catch (err) {
-    return res.json(err.message);
+    res.status(404).json({ message: err.message });
   }
 });
 

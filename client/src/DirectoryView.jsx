@@ -5,6 +5,8 @@ import "./App.css";
 function DirectoryView() {
   const BASE_URL = "http://localhost:4000"; //server port
   const [directoryItems, setDirectoryItems] = useState([]);
+  const [dirList, setDirList] = useState([]);
+  const [fileList, setFilelist] = useState([]);
   const [progress, setProgress] = useState(0);
   const [newFilename, setNewFilename] = useState("");
   const [title, setTitle] = useState("");
@@ -14,9 +16,11 @@ function DirectoryView() {
    
   async function getDirectoryItems() {
     const response = await fetch(`${BASE_URL}/directory/${dirPath}`);
-    const {dirname , directoryItems} = await response.json()
-    setTitle(dirname);
-    setDirectoryItems(directoryItems);
+    const data = await response.json();
+    setTitle(data.name)
+    setDirList(data.directories);
+    setFilelist(data.files)
+
   }
 
     useEffect(() => { 
@@ -42,14 +46,16 @@ function DirectoryView() {
     });
     xhr.send(file); //sending the actual file as request body
     e.target.value = null; //to allow uploading the same file again if needed
-    getDirectoryItems();
+    // getDirectoryItems();
+    setDirList()
   }
 
-  async function handleDelete(filename) {
-    const response = await fetch(`${BASE_URL}/file/${filename}`, {
+  async function handleDelete(fileId) {
+    const response = await fetch(`${BASE_URL}/file/${fileId}`, {
       method: "DELETE",
     });
-    const data = await response.json(); //response from the server is in json format but here we are sending plain text
+    const data = await response.text(); //response from the server is in json format but here we are sending plain text
+    console.log(data);
     getDirectoryItems();
   }
 
@@ -58,12 +64,10 @@ function DirectoryView() {
     setNewFilename(oldFilename);
   }
 
-  async function saveFilename(oldFilename) {
-    setNewFilename(oldFilename);
-    const response = await fetch(`${BASE_URL}/file/${oldFilename}`, {
+  async function saveFilename(fileId) {
+    const response = await fetch(`${BASE_URL}/file/${fileId}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" }, //only now express.json() middleware will work on the server
-      body: JSON.stringify({ newFilename }),
+      headers: { "Content-Type": "application/json" }, 
     });
     const data = await response.text();
     console.log(data);
@@ -72,7 +76,7 @@ function DirectoryView() {
   }
   async function handleCreateDirectory(e){
     e.preventDefault();
-    const url = `${BASE_URL}/directory${dirPath ? "/" + dirPath : ""}/${newDirname}`;
+    const url = `${BASE_URL}/directory/${dirPath ? "/" + dirPath : ""}/${newDirname}`;
     console.log(url);
     const response = await fetch(url , {
         method : "POST"
@@ -113,24 +117,16 @@ function DirectoryView() {
 
           <h3>{ title }</h3>
         {
-          directoryItems.map(({name , isDir}) => ( //destructuring from each item
-          <div key={name}>
-          
+          fileList.map(({name , id}) => ( //destructuring from each item
+          <div key={id}>
           {name}{" "}
           
-          {isDir && <Link to={`./${name}`}>Open</Link>}
-          { !isDir &&  
-          <a href={`${BASE_URL}/files/${dirPath}/${name}?action=open`}>
-              Open
-            </a>}{" "}
-          { !isDir &&  //remove download button for directories
-          <a href={`${BASE_URL}/files/${dirPath}/${name}?action=download`}>
-              Download
-            </a>
-          } 
+          <a href={`${BASE_URL}/file/${dirPath}/${id}`}> Open</a>{" "}
+          <a href={`${BASE_URL}/file/${dirPath}/${id}?action=download`}>Download</a>
+          
           <button onClick={() => renameFile(name)}>Rename</button>
-          <button onClick={() => saveFilename(name)}>Save</button>
-          <button onClick={() => handleDelete(name)}>  Delete </button>
+          <button onClick={() => saveFilename(id)}>Save</button>
+          <button onClick={() => handleDelete(id)}>  Delete </button>
             
           <br/>
        

@@ -1,26 +1,32 @@
 import express from "express";
-import { mkdir, readdir,  stat } from "fs/promises";
+import { mkdir } from "fs/promises";
 import path from "path";
 import directoriesData from "../directoriesDB.json" with {type:"json"};
+import filesData from "../filesDB.json" with {type:"json"};
 
 
 const router = express.Router();
 
 // Serving Dir Content
-router.get("/:id", async (req, res) => { //using id 
+router.get("/:id?", async (req, res) => { //using id 
   const{ id } = req.params;
-  if(!id){
-    const dirData = directoriesData[0];
-    
-    const files = dirData.files.map((fileID) =>{
-      filesData.find((file) =>  { file.id === fileID });
-    })
-    console.log(dirData);
-    res.json({...dirData , files})
-  }else{
-    const directoryData = directoriesData.find((dir) => { dir.id === id} ); //find directory 
+  try{
+    if(!id){
+    const directoryData = directoriesData[0];
+    const files = directoryData.files.map((fileId) => 
+      filesData.find((file) => file.id === fileId)
+    )
+    res.json({...directoryData , files})
+  }
+  else{
+    const directoryData = directoriesData.find((dir) =>dir.id === id ); //find directory 
     res.json(directoryData);
   }
+  }catch(err){
+     return res.status(500).json({ error: err.message }); 
+
+  }
+
 
 
   

@@ -1,15 +1,1 @@
-[
-    {
-        "id": "b843e0ec-a104-4130-8b77-dd647a4f3e7e",
-        "extension": ".pdf",
-        "name": "Resume_SmritiSingh.pdf",
-        "parentDirId" : 1
-    },
-    {
-        "id": "c49e9908-5537-4b51-87fc-04072cad59d2",
-        "extension": ".jpg",
-        "name": "IMG_20230507_174155.jpg",
-        "parentDirId" : 1
-    }
-   
-]
+[{"id":"b843e0ec-a104-4130-8b77-dd647a4f3e7e","extension":".pdf","name":"Resume_SmritiSingh.pdf","parentDirId":1},{"id":"c49e9908-5537-4b51-87fc-04072cad59d2","extension":".jpg","name":"IMG_20230507_174155.jpg","parentDirId":1},{"id":"f72a8df8-16c8-4d4f-9318-e5d9339d003b","extension":".png","name":"avatar_1729448874.png","parentDirId":"1"},{"id":"5b24efcc-953a-4b8d-82f8-5127765d3d53","extension":".png","name":"avatar_1729448874.png","parentDirId":"1"}]

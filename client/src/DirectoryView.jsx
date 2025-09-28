@@ -76,11 +76,14 @@ function DirectoryView() {
   }
   async function handleCreateDirectory(e){
     e.preventDefault();
-    const url = `${BASE_URL}/directory/${dirPath ? "/" + dirPath : ""}/${newDirname}`;
+    const url = `${BASE_URL}/directory/${dirPath || ""}`;
     console.log(url);
     const response = await fetch(url , {
-        method : "POST"
-      })
+        method : "POST",
+        headers:{
+          dirname : newDirname, //sending name in header
+        }
+      });
       const data= await response.json();
       console.log(data);
       setNewDirname("");
@@ -123,6 +126,23 @@ function DirectoryView() {
           
           <a href={`${BASE_URL}/file/${dirPath}/${id}`}> Open</a>{" "}
           <a href={`${BASE_URL}/file/${dirPath}/${id}?action=download`}>Download</a>
+          
+          <button onClick={() => renameFile(name)}>Rename</button>
+          <button onClick={() => saveFilename(id)}>Save</button>
+          <button onClick={() => handleDelete(id)}>  Delete </button>
+            
+          <br/>
+       
+         </div>
+          ))
+       }
+        {
+          dirList.map(({name , id}) => ( //destructuring from each item
+          <div key={id}>
+          {name}{" "}
+          
+          <Link to={`${BASE_URL}/directory/${id}`}> Open</Link>{" "}
+          <a href={`${BASE_URL}/directory/${id}?action=download`}>Download</a>
           
           <button onClick={() => renameFile(name)}>Rename</button>
           <button onClick={() => saveFilename(id)}>Save</button>

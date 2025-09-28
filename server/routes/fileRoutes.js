@@ -83,7 +83,7 @@ router.patch("/:id", async (req, res) => {
 
 // Delete
 router.delete("/:id", async (req, res) => {
-  const {id} = req.params
+  const {id} = req.params;
   const fileIndex = filesData.findIndex((file) => file.id === id)
   const fileData = filesData[fileIndex]
   try {

@@ -1,15 +1,19 @@
-import DirectoryView from "./DirectoryView"
-import React from "react"
-import {createBrowserRouter , RouterProvider} from "react-router-dom"
-
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import DirectoryView from "./DirectoryView";
 
 const router = createBrowserRouter([
-    {
-        path :"/*",
-        element : <DirectoryView />
-    }
+  {
+    path: "/",
+    element: <DirectoryView />,
+  },
+  {
+    path: "/directory/:dirId",
+    element: <DirectoryView />,
+  },
 ]);
 
-export default function App(){
-        return <RouterProvider router = {router}/>
-    };
+function App() {
+  return <RouterProvider router={router} />;
+}
+
+export default App;

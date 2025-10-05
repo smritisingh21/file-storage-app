@@ -1,62 +1,81 @@
 import express from "express";
-import { writeFile } from "fs/promises";
-import directoriesData from "../directoriesDB.json" with {type:"json"};
-import filesData from "../filesDB.json" with {type:"json"};
-import crypto from "node:crypto"
+import { mkdir, readdir, rm, stat, writeFile } from "fs/promises";
+import path from "path";
+import directoriesData from '../directoriesDB.json' with {type: "json"}
+import filesData from '../filesDB.json' with {type: "json"}
 
 const router = express.Router();
 
-// Serving Dir Content
-router.get("/:id?", async (req, res) => { //using id 
-  const{ id } = req.params;
-  try{
-    if(!id){
-    const directoryData = directoriesData[0];
+// Read
+router.get("/:id?", async (req, res) => {
+  const { id } = req.params
+  const directoryData = id ? directoriesData.find((directory) => directory.id === id) : directoriesData[0]
+  const files = directoryData.files.map((fileId) =>
+    filesData.find((file) => file.id === fileId)
+  )
+ const directories = directoryData.directories
+  .map((dirId) => directoriesData.find((dir) => dir.id === dirId))
+  .filter(Boolean) // removes any undefined
+  .map(({ id, name }) => ({ id, name }));
 
-    const files = directoryData.files.map((fileId) => 
-      filesData.find((file) => file.id === fileId)
-    )
-    const directories = directoryData.directories.map((dirId) =>  //populating directories to send in json to frontend
-      directoriesData.find((dir) => dir.id === dirId)
-    )
-    res.json({...directoryData , files , directories})
-  }
-  else{
-    const directoryData = directoriesData.find((dir) =>dir.id === id ); //find directory 
-    res.json(directoryData);
-  }
-  }catch(err){
-     return res.status(500).json({ error: err.message }); 
+  res.json({ ...directoryData, files, directories })
+});
 
-  }
-}); 
-//directory creation
-router.post("/:parenDirId?",async (req, res) => {
-  const parenDirId =req.params.parenDirId || directoriesData[0].id;
-  const {dirname} = req.headers.dirname; //receiving name from header
-  const id = crypto.randomUUID();
-  console.log("directory name:", dirname);
-
-  const parenDirectory = directoriesData.find((dir) => parenDirId === dir.id)  //find parentdir 
-  parenDirectory.directories.push(id); //push the created directory id in its parentdirectory for reference
-
+router.post("/:parentDirId?", async (req, res) => {
+  const parentDirId = req.params.parentDirId || directoriesData[0].id
+  const { dirname } = req.headers
+  const id = crypto.randomUUID()
+  const parentDir = directoriesData.find((dir) => dir.id === parentDirId)
+  parentDir.directories.push(id)
   directoriesData.push({
-    dirname, 
-    id, 
-    parenDirId,
-    files:[],
-    directories:[]
+    id,
+    name: dirname,
+    parentDirId,
+    files: [],
+    directories: []
   })
-
-  try{
+  try {
     await writeFile('./directoriesDB.json', JSON.stringify(directoriesData))
-    res.status(200).json({message:"directory created"})
-  }catch(err){
-    res.status(404).json({message : "directory not created " })
+    res.json({ message: "Directory Created!" })
+  } catch (err) {
+    res.status(404).json({ err: err.message });
+  }
+});
+
+router.patch('/:id', async (req, res) => {
+  const {id} = req.params
+  const {newDirName} = req.body
+  const dirData = directoriesData.find((dir) => dir.id === id)
+  dirData.name = newDirName
+  await writeFile('./directoriesDB.json', JSON.stringify(directoriesData))
+  res.json({message: "Directory Renamed!"})
+})
+
+router.delete("/:id", async (req, res) => {
+  const {id} = req.params
+  try {
+    const dirIndex = directoriesData.findIndex((directory) => directory.id === id)
+    const directoryData = directoriesData[dirIndex]
+    directoriesData.splice(dirIndex, 1)
+    for await (const fileId of directoryData.files) {
+      const fileIndex = filesData.findIndex((file) => file.id === fileId)
+      const fileData = filesData[fileIndex]
+      await rm(`./storage/${fileId}${fileData.extension}`);
+      filesData.splice(fileIndex, 1)
+    }
+    for await (const dirId of directoryData.directories) {
+      const dirIndex = directoriesData.findIndex(({id}) => id === dirId)
+      directoriesData.splice(dirIndex, 1)
+    }
+    const parentDirData = directoriesData.find((dirData) => dirData.id === directoryData.parentDirId)
+    parentDirData.directories = parentDirData.directories.filter((dirId) => dirId !== id)
+    await writeFile('./filesDB.json', JSON.stringify(filesData))
+    await writeFile('./directoriesDB.json', JSON.stringify(directoriesData))
+    res.json({ message: "Directory Deleted!" });
+  } catch (err) {
+    console.log(err);
+    res.json({ err: err.message });
   }
 });
 
 export default router;
-
-
-

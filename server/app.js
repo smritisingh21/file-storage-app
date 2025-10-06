@@ -11,6 +11,11 @@ app.use(cors()); //middleware to enable CORS
 app.use("/file" , fileRoutes);
 app.use("/directory" , directoryRoutes)
 
+//global error handler
+app.use((err , req, res ,next) =>{ 
+  res.status(400).json("error occured") 
+})
+
 
 app.listen(4000, () =>{
   console.log("server is listening on port 4000");

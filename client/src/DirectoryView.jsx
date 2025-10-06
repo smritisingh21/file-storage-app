@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 
 function DirectoryView() {
   const BASE_URL = "http://localhost:4000";
-  const [directoryItems, setDirectoryItems] = useState([]);
   const [directoriesList, setDirectoriesList] = useState([]);
   const [filesList, setFilesList] = useState([]);
   const [progress, setProgress] = useState(0);

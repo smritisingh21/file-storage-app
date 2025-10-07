@@ -48,8 +48,8 @@ router.post("/:parentDirId?", (req, res) => {
     const parentDirData = directoriesData.find((directoryData) => directoryData.id === parentDirId)
     parentDirData.files.push(id);
     try{
-    await writeFile('./filesDB.json', JSON.stringify(filesData))
-    await writeFile('./directoriesDB.json', JSON.stringify(directoriesData))
+    await writeFile('./filesDB.json', JSON.stringify(filesData, null, 2))
+    await writeFile('./directoriesDB.json', JSON.stringify(directoriesData, null, 2))
     res.json({ message: "File Uploaded" });
     }catch(err){
       return res.json({message:"Something went wrong in uploading the file"})
@@ -69,7 +69,7 @@ router.patch("/:id", async (req, res) => {
   }
 
   try{
-    await writeFile('./filesDB.json', JSON.stringify(filesData))
+    await writeFile('./filesDB.json', JSON.stringify(filesData, null, 2))
     res.json({ message: "Renamed" });
   }catch(err){
     res.status(500).json({ message: "Something went wrong in renaming the file" });
@@ -79,24 +79,27 @@ router.patch("/:id", async (req, res) => {
 });
 
 // Delete
-router.delete("/:id", async (req, res , next) => {
-  const {id} = req.params
+router.delete("/:id", async (req, res,next) => {
+  const id = req.params.id;
   const fileIndex = filesData.findIndex((file) => file.id === id)
+  console.log("file index: ",fileIndex);
   if(fileIndex == -1){
     return res.status(404).json({message :"File not found!!!"})
   }
-  const fileData = filesData[fileIndex]
+  const fileData = filesData[fileIndex];
+  
+  console.log("file data: ", fileData);
   try {
     await rm(`./storage/${id}${fileData.extension}`, { recursive: true });
     filesData.splice(fileIndex, 1)
     const parentDirData = directoriesData.find((directoryData) => directoryData.id === fileData.parentDirId)
     parentDirData.files = parentDirData.files.filter((fileId) => fileId !== id)
     console.log(parentDirData.files);
-    await writeFile('./filesDB.json', JSON.stringify(filesData))
-    await writeFile('./directoriesDB.json', JSON.stringify(directoriesData))
+    await writeFile('./filesDB.json', JSON.stringify(filesData, null, 2))
+    await writeFile('./directoriesDB.json', JSON.stringify(directoriesData, null, 2))
     res.json({ message: "File Deleted Successfully" });
   } catch (err) {
-    next(err) //forwarded to global error handler
+    res.status(500).json({message : err.message});
   }
 });
 

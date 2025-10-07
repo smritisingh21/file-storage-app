@@ -1,24 +1,22 @@
 import express from "express";
 import cors from "cors";
-import fileRoutes from "./routes/fileRoutes.js"
-import directoryRoutes from "./routes/directoryRoutes.js"
-import userRoutes from "./routes/userRoutes.js"
+import directoryRoutes from "./routes/directoryRoutes.js";
+import fileRoutes from "./routes/fileRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 
-app.use(express.json()); //middleware to parse JSON bodies
-app.use(cors()); //middleware to enable CORS
+app.use(express.json());
+app.use(cors());
 
-app.use("/file" , fileRoutes);
-app.use("/directory" , directoryRoutes)
-app.use("/user" , userRoutes)
+app.use("/directory", directoryRoutes);
+app.use("/file", fileRoutes);
+app.use("/user", userRoutes);
 
-//global error handler
-app.use((err , req, res ,next) =>{ 
-  res.status(400).json("error occured") 
-})
+app.use((err, req, res, next) => {
+  res.status(err.status || 500).json({ message: "Something went wrong!" });
+});
 
-
-app.listen(4000, () =>{
-  console.log("server is listening on port 4000");
-})
+app.listen(4000, () => {
+  console.log(`Server Started`);
+});

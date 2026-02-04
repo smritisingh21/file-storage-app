@@ -44,6 +44,7 @@ function DirectoryList({
               handleDeleteDirectory={handleDeleteDirectory}
               openRenameModal={openRenameModal}
               BASE_URL={BASE_URL}
+              
             />
           );
         })}

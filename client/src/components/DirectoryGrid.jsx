@@ -30,14 +30,13 @@ export default function DirectoryGrid({
   function renderFileIcon(iconString, isImagePreview = false, itemId = null) {
     const iconClass = "w-12 h-12"; 
     
-    // Check if it's an image and not a temporary upload to show preview
     if (isImagePreview && itemId && !String(itemId).startsWith("temp-")) {
       return (
         <img 
           src={`${BASE_URL}/file/${itemId}?action=view`} 
           alt="preview"
           className="w-full h-full object-cover rounded-xl"
-          onError={(e) => { e.target.style.display = 'none'; }} // Fallback if image fails
+          onError={(e) => { e.target.style.display = 'none'; }} 
         />
       );
     }
@@ -62,7 +61,7 @@ export default function DirectoryGrid({
         return (
           <div
             key={item.id}
-            className="group relative flex flex-col items-center p-4 bg-white border border-slate-100 rounded-2xl hover:shadow-sm hover:border-indigo-100 hover:bg-gray-100 transition-all duration-200 cursor-pointer"
+            className="group relative flex flex-col items-center p-4 bg-white border border-slate-100 rounded-2xl hover:shadow-sm hover:border-indigo-100 hover:bg-slate-50 transition-all duration-200 cursor-pointer"
             onClick={() =>
               !(activeContextMenu || isUploading)
                 ? handleRowClick(item.isDirectory ? "directory" : "file", item.id)
@@ -70,7 +69,7 @@ export default function DirectoryGrid({
             }
             onContextMenu={(e) => handleContextMenu(e, item.id)}
           >
-            {/* Top Left: File Extension Badge */}
+            {/* Top Left: File Extension Badge (File only) */}
             {!item.isDirectory && !isUploadingItem && (
               <div className="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[9px] font-bold uppercase text-slate-500 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
                 {item.name.split('.').pop()}
@@ -105,12 +104,15 @@ export default function DirectoryGrid({
                 {item.name}
               </span>
               
-              {/* Last Modified Metadata */}
-              <span className="text-[10px] text-slate-400 mt-1 uppercase font-medium tracking-tighter">
-                {item.updatedAt 
-                  ? new Date(item.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) 
-                  : 'Just now'}
-              </span>
+              <div className="flex items-center justify-center gap-2 mt-1">
+                {/* Number of Items (Folder only) */}
+                {item.isDirectory && (
+                  <span className="text-[10px] text-gray-500 font-bold px-1.5 py-0.5 rounded">
+                    {item.itemsCount || 0} items
+                  </span>
+                )}
+
+              </div>
             </div>
 
             {/* Uploading Overlay */}
@@ -129,7 +131,6 @@ export default function DirectoryGrid({
               </div>
             )}
 
-            {/* Context Menu Component */}
             {activeContextMenu === item.id && (
               <ContextMenu
                 item={item}

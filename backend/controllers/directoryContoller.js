@@ -14,10 +14,18 @@ export const getDirectory = async (req, res) => {
 
   const files = await File.find({ parentDirId: directoryData._id }).lean();
   const directories = await Directory.find({ parentDirId: _id }).lean();
+  //counting items
+  const directoriesWithCount = await Promise.all(directories.map(async (doc) => {
+    const subDirs = await Directory.countDocuments({ parentDirId: doc._id });
+    const subFiles = await File.countDocuments({ parentDirId: doc._id });
+    return { 
+      ...doc, id:doc._id ,itemsCount: subDirs + subFiles };
+}));
+
   return res.status(200).json({
     ...directoryData,
     files: files.map((dir) => ({ ...dir, id: dir._id })),
-    directories: directories.map((dir) => ({ ...dir, id: dir._id })),
+    directories: directoriesWithCount,
   });
 };
 

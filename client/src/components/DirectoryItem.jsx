@@ -6,6 +6,7 @@ import {
   FaFileArchive,
   FaFileCode,
   FaFileAlt,
+  FaCheckCircle
 } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import ContextMenu from "../components/ContextMenu";
@@ -25,30 +26,24 @@ function DirectoryItem({
   openRenameModal,
   BASE_URL,
 }) {
-  // Convert the file icon string to the actual Icon component
+  // Logic: Decide which icon component to render
   function renderFileIcon(iconString) {
+    const iconClass = "w-5 h-5"; 
     switch (iconString) {
-      case "pdf":
-        return <FaFilePdf />;
-      case "image":
-        return <FaFileImage />;
-      case "video":
-        return <FaFileVideo />;
-      case "archive":
-        return <FaFileArchive />;
-      case "code":
-        return <FaFileCode />;
-      case "alt":
-      default:
-        return <FaFileAlt />;
+      case "pdf": return <FaFilePdf className={`${iconClass} text-red-500`} />;
+      case "image": return <FaFileImage className={`${iconClass} text-blue-500`} />;
+      case "video": return <FaFileVideo className={`${iconClass} text-purple-500`} />;
+      case "archive": return <FaFileArchive className={`${iconClass} text-orange-500`} />;
+      case "code": return <FaFileCode className={`${iconClass} text-emerald-500`} />;
+      default: return <FaFileAlt className={`${iconClass} text-slate-400`} />;
     }
   }
 
-  const isUploadingItem = item.id.startsWith("temp-");
+  const isUploadingItem = String(item.id).startsWith("temp-");
 
   return (
     <div
-      className="list-item hoverable-row"
+      className="group grid grid-cols-12 items-center px-6 py-3 bg-white border-b border-slate-100 hover:bg-indigo-50/40 transition-all cursor-pointer relative"
       onClick={() =>
         !(activeContextMenu || isUploading)
           ? handleRowClick(item.isDirectory ? "directory" : "file", item.id)
@@ -56,40 +51,67 @@ function DirectoryItem({
       }
       onContextMenu={(e) => handleContextMenu(e, item.id)}
     >
-      <div className="item-left-container">
-        <div className="item-left">
+      {/* COLUMN 1: Icon & Name (Span 8 on mobile, 6 on desktop) */}
+      <div className="col-span-8 md:col-span-6 flex items-center gap-4 min-w-0">
+        <div className={`flex shrink-0 items-center justify-center w-10 h-10 rounded-xl transition-transform group-hover:scale-105 ${
+          item.isDirectory ? 'bg-amber-100 text-amber-600' : 'bg-slate-100'
+        }`}>
           {item.isDirectory ? (
-            <FaFolder className="folder-icon" />
+            <FaFolder className="w-5 h-5" />
           ) : (
             renderFileIcon(getFileIcon(item.name))
           )}
-          <span>{item.name}</span>
         </div>
+        
+        <div className="flex flex-col min-w-0 flex-1">
+          <span className="font-medium text-slate-700 truncate group-hover:text-indigo-600 transition-colors">
+            {item.name}
+          </span>
+          {/* Inline uploading label for mobile */}
+          {isUploadingItem && (
+            <span className="md:hidden text-[10px] font-bold text-indigo-500 uppercase">
+              {Math.floor(uploadProgress)}% Uploading...
+            </span>
+          )}
+        </div>
+      </div>
 
-        {/* Three dots for context menu */}
+      {/* COLUMN 2: Status & Inline Progress Bar (Desktop Only) */}
+      <div className="hidden md:flex col-span-3 items-center px-4">
+        {isUploadingItem ? (
+          <div className="w-full flex items-center gap-3">
+            <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-indigo-600 transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+            <span className="text-xs font-bold text-indigo-600 w-8">
+              {Math.floor(uploadProgress)}%
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-slate-400">
+            <FaCheckCircle className="text-emerald-500 w-3 h-3" />
+            <span className="text-xs font-medium uppercase tracking-wider">Synced</span>
+          </div>
+        )}
+      </div>
+
+      {/* COLUMN 3: Actions (Span 4 on mobile, 3 on desktop) */}
+      <div className="col-span-4 md:col-span-3 flex justify-end items-center">
         <div
-          className="context-menu-trigger"
-          onClick={(e) => handleContextMenu(e, item.id)}
+          className="p-2 rounded-full text-slate-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleContextMenu(e, item.id);
+          }}
         >
           <BsThreeDotsVertical />
         </div>
       </div>
 
-      {/* PROGRESS BAR: shown if an item is in queue or actively uploading */}
-      {isUploadingItem && (
-        <div className="progress-container">
-          <span className="progress-value">{Math.floor(uploadProgress)}%</span>
-          <div
-            className="progress-bar"
-            style={{
-              width: `${uploadProgress}%`,
-              backgroundColor: uploadProgress === 100 ? "#039203" : "#007bff",
-            }}
-          ></div>
-        </div>
-      )}
-
-      {/* Context menu, if active */}
+      {/* Context Menu Overlay */}
       {activeContextMenu === item.id && (
         <ContextMenu
           item={item}

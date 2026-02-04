@@ -16,9 +16,7 @@ function DirectoryHeader({
   handleFileSelect,
   disabled = false,
 }) {
-  // Use a constant for the API base URL
   const BASE_URL = "http://localhost:8000";
-
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [userName, setUserName] = useState("Guest User");
@@ -27,73 +25,39 @@ function DirectoryHeader({
   const userMenuRef = useRef(null);
   const navigate = useNavigate();
 
-  // -----------------------------------------
-  // 1. Fetch user info from /user on mount
-  // -----------------------------------------
   useEffect(() => {
     async function fetchUser() {
       try {
-        const response = await fetch(`${BASE_URL}/user`, {
-          credentials: "include",
-        });
+        const response = await fetch(`${BASE_URL}/user`, { credentials: "include" });
         if (response.ok) {
           const data = await response.json();
-          // Set user info if logged in
           setUserName(data.name);
           setUserEmail(data.email);
           setLoggedIn(true);
         } else if (response.status === 401) {
-          // User not logged in
           setUserName("Guest User");
           setUserEmail("guest@example.com");
           setLoggedIn(false);
-        } else {
-          // Handle other error statuses if needed
-          console.error("Error fetching user info:", response.status);
         }
-      } catch (err) {
-        console.error("Error fetching user info:", err);
-      }
+      } catch (err) { console.error("Error fetching user info:", err); }
     }
     fetchUser();
   }, [BASE_URL]);
 
-  // -------------------------------------------
-  // 2. Toggle user menu
-  // -------------------------------------------
-  const handleUserIconClick = () => {
-    setShowUserMenu((prev) => !prev);
-  };
+  const handleUserIconClick = () => setShowUserMenu((prev) => !prev);
 
-  // -------------------------------------------
-  // 3. Logout handler
-  // -------------------------------------------
   const handleLogout = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/user/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
+      const response = await fetch(`${BASE_URL}/user/logout`, { method: "POST", credentials: "include" });
       if (response.ok) {
-        console.log("Logged out successfully");
-        // Optionally reset local state
         setLoggedIn(false);
         setUserName("Guest User");
         setUserEmail("guest@example.com");
         navigate("/login");
-      } else {
-        console.error("Logout failed");
       }
-    } catch (err) {
-      console.error("Logout error:", err);
-    } finally {
-      setShowUserMenu(false);
-    }
+    } catch (err) { console.error("Logout error:", err); } finally { setShowUserMenu(false); }
   };
 
-  // -------------------------------------------
-  // 4. Close menu on outside click
-  // -------------------------------------------
   useEffect(() => {
     function handleDocumentClick(e) {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
@@ -101,87 +65,80 @@ function DirectoryHeader({
       }
     }
     document.addEventListener("mousedown", handleDocumentClick);
-    return () => {
-      document.removeEventListener("mousedown", handleDocumentClick);
-    };
+    return () => document.removeEventListener("mousedown", handleDocumentClick);
   }, []);
 
   return (
-    <header className="directory-header">
-      <h1>{directoryName}</h1>
-      <div className="header-links">
-        {/* Create Folder (icon button) */}
-        <button
-          className="icon-button"
-          title="Create Folder"
-          onClick={onCreateFolderClick}
-          disabled={disabled}
-        >
-          <FaFolderPlus />
-        </button>
+    <header className="flex items-center justify-between">
+      <h1 className="text-2xl font-bold text-slate-800 tracking-tight truncate max-w-[50%]">
+        {directoryName}
+      </h1>
 
-        {/* Upload Files (icon button) */}
-        <button
-          className="icon-button"
-          title="Upload Files"
-          onClick={onUploadFilesClick}
-          disabled={disabled}
-        >
-          <FaUpload />
-        </button>
+      <div className="flex items-center gap-2">
+        {/* Action Buttons */}
+        <div className="flex bg-slate-100 p-1 rounded-xl mr-2">
+          <button
+            title="Create Folder"
+            onClick={onCreateFolderClick}
+            disabled={disabled}
+            className="p-2.5 text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm rounded-lg transition-all disabled:opacity-40 disabled:hover:bg-transparent"
+          >
+            <FaFolderPlus size={18} />
+          </button>
 
-        {/* Hidden file input */}
+          <button
+            title="Upload Files"
+            onClick={onUploadFilesClick}
+            disabled={disabled}
+            className="p-2.5 text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm rounded-lg transition-all disabled:opacity-40 disabled:hover:bg-transparent"
+          >
+            <FaUpload size={18} />
+          </button>
+        </div>
+
         <input
           ref={fileInputRef}
           id="file-upload"
           type="file"
-          style={{ display: "none" }}
+          className="hidden"
           multiple
           onChange={handleFileSelect}
         />
 
-        {/* User Icon & Dropdown Menu */}
-        <div className="user-menu-container" ref={userMenuRef}>
+        {/* User Menu */}
+        <div className="relative" ref={userMenuRef}>
           <button
-            className="icon-button"
-            title="User Menu"
             onClick={handleUserIconClick}
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors"
           >
-            <FaUser />
+            <FaUser size={16} />
           </button>
 
           {showUserMenu && (
-            <div className="user-menu">
+            <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl ring-1 ring-black/5 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
               {loggedIn ? (
                 <>
-                  {/* Display name & email if logged in */}
-                  <div className="user-menu-item user-info">
-                    <span className="user-name">{userName}</span>
-                    <span className="user-email">{userEmail}</span>
+                  <div className="px-4 py-4 bg-slate-50/50">
+                    <p className="text-sm font-semibold text-slate-900 truncate">{userName}</p>
+                    <p className="text-xs text-slate-500 truncate">{userEmail}</p>
                   </div>
-                  <div className="user-menu-divider" />
-                  <div
-                    className="user-menu-item login-btn"
+                  <div className="border-t border-slate-100" />
+                  <button
                     onClick={handleLogout}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   >
-                    <FaSignOutAlt className="menu-item-icon" />
-                    <span>Logout</span>
-                  </div>
+                    <FaSignOutAlt />
+                    <span className="font-medium">Logout</span>
+                  </button>
                 </>
               ) : (
-                <>
-                  {/* Show Login if not logged in */}
-                  <div
-                    className="user-menu-item login-btn"
-                    onClick={() => {
-                      navigate("/login");
-                      setShowUserMenu(false);
-                    }}
-                  >
-                    <FaSignInAlt className="menu-item-icon" />
-                    <span>Login</span>
-                  </div>
-                </>
+                <button
+                  onClick={() => { navigate("/login"); setShowUserMenu(false); }}
+                  className="flex w-full items-center gap-3 px-4 py-4 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  <FaSignInAlt className="text-indigo-600" />
+                  <span className="font-medium">Login</span>
+                </button>
               )}
             </div>
           )}

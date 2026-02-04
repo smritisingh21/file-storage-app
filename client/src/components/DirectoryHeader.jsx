@@ -76,23 +76,23 @@ function DirectoryHeader({
 
       <div className="flex items-center gap-2">
         {/* Action Buttons */}
-        <div className="flex bg-slate-100 p-1 rounded-xl mr-2">
+        <div className="flex gap-2 ">
           <button
             title="Create Folder"
             onClick={onCreateFolderClick}
             disabled={disabled}
-            className="p-2.5 text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm rounded-lg transition-all disabled:opacity-40 disabled:hover:bg-transparent"
+            className="p-2.5 border-2 text-sm flex items-center gap-2 justify-center text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm rounded-lg transition-all disabled:opacity-40 disabled:hover:bg-transparent"
           >
-            <FaFolderPlus size={18} />
+            <FaFolderPlus size={18} fill="blue"/> New Folder
           </button>
 
           <button
             title="Upload Files"
             onClick={onUploadFilesClick}
             disabled={disabled}
-            className="p-2.5 text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm rounded-lg transition-all disabled:opacity-40 disabled:hover:bg-transparent"
+            className="p-2.5 border-2 text-sm flex items-center gap-2 justify-center  text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm rounded-lg transition-all disabled:opacity-40 disabled:hover:bg-transparent"
           >
-            <FaUpload size={18} />
+            <FaUpload size={18}  fill="purple"/> New file
           </button>
         </div>
 

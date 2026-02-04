@@ -4,6 +4,7 @@ import DirectoryHeader from "./components/DirectoryHeader";
 import CreateDirectoryModal from "./components/CreateDirectoryModal";
 import RenameModal from "./components/RenameModal";
 import DirectoryList from "./components/DirectoryList";
+import DirectoryGrid from "./components/DirectoryGrid";
 
 function DirectoryView() {
   const BASE_URL = "http://localhost:8000";
@@ -27,6 +28,8 @@ function DirectoryView() {
   const [isUploading, setIsUploading] = useState(false); 
   const [activeContextMenu, setActiveContextMenu] = useState(null);
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
+  const [viewMode, setViewMode] = useState("list"); 
+  const [searchQuery, setSearchQuery] = useState("");
 
   async function handleFetchErrors(response) {
     if (!response.ok) {
@@ -204,6 +207,27 @@ function DirectoryView() {
     ...directoriesList.map((d) => ({ ...d, isDirectory: true })),
     ...filesList.map((f) => ({ ...f, isDirectory: false })),
   ];
+  // 1. Filter items based on search query
+const filteredItems = combinedItems.filter((item) =>
+  item.name.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
+// 2. Define the props once to keep the JSX clean
+const listProps = {
+  items: filteredItems,
+  handleRowClick,
+  activeContextMenu,
+  contextMenuPos,
+  handleContextMenu,
+  getFileIcon,
+  isUploading,
+  progressMap,
+  handleCancelUpload,
+  handleDeleteFile,
+  handleDeleteDirectory,
+  openRenameModal,
+  BASE_URL,
+};
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
@@ -228,39 +252,84 @@ function DirectoryView() {
             disabled={errorMessage === "Directory not found or you do not have access to it!"}
           />
         </div>
+        {/* Toolbar Section */}
+<div className="mb-4 flex flex-col md:flex-row items-center justify-between gap-4 px-2">
+  
+  {/* Search Bar */}
+  <div className="relative w-full md:w-96 group">
+    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </span>
+    <input
+      type="text"
+      placeholder="Search in folder..."
+      className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-sm shadow-sm"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+    />
+  </div>
+
+  <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+    {/* Sort Button */}
+    <button className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+      </svg>
+      Sort
+    </button>
+
+    {/* View Toggles */}
+    <div className="flex bg-slate-200/50 p-1 rounded-xl">
+      <button 
+        onClick={() => setViewMode("list")}
+        className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <button 
+        onClick={() => setViewMode("grid")}
+        className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
 
         {/* Content Section */}
-        <main className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden">
-          {combinedItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="mb-4 text-6xl opacity-20">📂</div>
-              <p className="text-lg font-medium text-slate-400">
-                {errorMessage === "Directory not found or you do not have access to it!" 
-                  ? "Access Denied or Directory Missing" 
-                  : "This folder is empty"}
-              </p>
-              <p className="text-sm text-slate-400">Upload files to get started</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <DirectoryList
-                items={combinedItems}
-                handleRowClick={handleRowClick}
-                activeContextMenu={activeContextMenu}
-                contextMenuPos={contextMenuPos}
-                handleContextMenu={handleContextMenu}
-                getFileIcon={getFileIcon}
-                isUploading={isUploading}
-                progressMap={progressMap}
-                handleCancelUpload={handleCancelUpload}
-                handleDeleteFile={handleDeleteFile}
-                handleDeleteDirectory={handleDeleteDirectory}
-                openRenameModal={openRenameModal}
-                BASE_URL={BASE_URL}
-              />
-            </div>
-          )}
-        </main>
+<main className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden min-h-[400px]">
+  {filteredItems.length === 0 ? (
+    <div className="flex flex-col items-center justify-center py-24 text-center">
+      <div className="mb-4 text-6xl opacity-20">
+        {searchQuery ? "🔍" : "📂"}
+      </div>
+      <p className="text-lg font-medium text-slate-400">
+        {searchQuery 
+          ? `No results found for "${searchQuery}"`
+          : errorMessage === "Directory not found or you do not have access to it!" 
+            ? "Access Denied or Directory Missing" 
+            : "This folder is empty"}
+      </p>
+      <p className="text-sm text-slate-400">
+        {searchQuery ? "Try a different search term" : "Upload files to get started"}
+      </p>
+    </div>
+  ) : (
+    <div className={viewMode === "list" ? "overflow-x-auto" : ""}>
+      {viewMode === "list" ? (
+        <DirectoryList {...listProps} />
+      ) : (
+        <DirectoryGrid {...listProps} />
+      )}
+    </div>
+  )}
+</main>
       </div>
 
       {/* Modals (Logic triggers remains same) */}

@@ -20,8 +20,6 @@ function DirectoryList({
       {/* Table Header - Only visible on desktop for that sleek "Explorer" feel */}
       <div className="grid grid-cols-12 px-6 py-3 border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/50">
         <div className="col-span-8 md:col-span-6">Name</div>
-        <div className="hidden md:block md:col-span-3 text-center">Status</div>
-        <div className="col-span-4 md:col-span-3 text-right">Actions</div>
       </div>
 
       <div className="flex flex-col divide-y divide-slate-50">

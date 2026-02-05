@@ -26,6 +26,7 @@ function DirectoryItem({
   openRenameModal,
   BASE_URL,
 }) {
+  // Logic: Decide which icon component to render
   function renderFileIcon(iconString) {
     const iconClass = "w-5 h-5"; 
     switch (iconString) {
@@ -50,8 +51,8 @@ function DirectoryItem({
       }
       onContextMenu={(e) => handleContextMenu(e, item.id)}
     >
-      {/* COLUMN 1: Icon & Name */}
-      <div className="col-span-7 md:col-span-5 flex items-center gap-4 min-w-0">
+      <div className="col-span-8 md:col-span-6 flex items-center gap-4 min-w-0">
+
         <div className={`flex shrink-0 items-center justify-center w-10 h-10 rounded-xl transition-transform group-hover:scale-105 ${
           item.isDirectory ? 'bg-amber-100 text-amber-600' : 'bg-slate-100'
         }`}>
@@ -66,25 +67,16 @@ function DirectoryItem({
           <span className="font-medium text-slate-700 truncate group-hover:text-indigo-600 transition-colors">
             {item.name}
           </span>
-          {/* Item count sub-label for mobile */}
-          {item.isDirectory && (
-             <span className="md:hidden text-[10px] text-slate-400 font-medium">
-                {item.itemsCount || 0} items
-             </span>
+          {/* Inline uploading label for mobile */}
+          {isUploadingItem && (
+            <span className="md:hidden text-[10px] font-bold text-indigo-500 uppercase">
+              {Math.floor(uploadProgress)}% Uploading...
+            </span>
           )}
         </div>
       </div>
 
-      {/* COLUMN 2: Folder/File Details (Desktop Only) */}
-      <div className="hidden md:flex col-span-2 items-center text-slate-400 text-sm">
-        {item.isDirectory ? (
-          <span className="font-medium">{item.itemsCount || 0} items</span>
-        ) : (
-          <span className="text-xs uppercase tracking-tighter italic">File</span>
-        )}
-      </div>
-
-      {/* COLUMN 3: Status & Progress */}
+      {/* COLUMN 2: Status & Inline Progress Bar (Desktop Only) */}
       <div className="hidden md:flex col-span-3 items-center px-4">
         {isUploadingItem ? (
           <div className="w-full flex items-center gap-3">
@@ -98,16 +90,11 @@ function DirectoryItem({
               {Math.floor(uploadProgress)}%
             </span>
           </div>
-        ) : (
-          <div className="flex items-center gap-2 text-slate-400">
-            <FaCheckCircle className="text-emerald-500 w-3 h-3" />
-            <span className="text-xs font-medium uppercase tracking-wider">Uploaded</span>
-          </div>
-        )}
+        ) : ("")
+        }
       </div>
 
-      {/* COLUMN 4: Actions */}
-      <div className="col-span-5 md:col-span-2 flex justify-end items-center">
+      <div className="col-span-4 md:col-span-3 flex justify-end items-center">
         <div
           className="p-2 rounded-full text-slate-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
           onClick={(e) => {
@@ -115,7 +102,10 @@ function DirectoryItem({
             handleContextMenu(e, item.id);
           }}
         >
+          <div className="flex items-center justify-center text-xs gap-3">
+          {item.itemsCount || 0 } items
           <BsThreeDotsVertical />
+          </div>
         </div>
       </div>
 

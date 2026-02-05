@@ -30,7 +30,40 @@ function DirectoryView() {
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
   const [viewMode, setViewMode] = useState("list"); 
   const [searchQuery, setSearchQuery] = useState("");
+const [previewIndex, setPreviewIndex] = useState(null);
+const [previewImages, setPreviewImages] = useState([]);
 
+function handleRowClick(type, id) {
+  if (type === "directory") {
+    navigate(`/directory/${id}`);
+  } else {
+    // 1. Find the clicked file
+    const clickedFile = combinedItems.find(f => f.id === id);
+    if (!clickedFile) return;
+
+    // 2. Check if it's an image
+    const isImg = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(
+      clickedFile.name.split('.').pop().toLowerCase()
+    );
+
+    if (isImg) {
+      // 3. Create a list of ONLY images from the current folder
+      const allImagesInFolder = combinedItems.filter(f => {
+        const ext = f.name.split('.').pop().toLowerCase();
+        return !f.isDirectory && ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+      });
+
+      // 4. Find where our clicked image sits in that specific list
+      const index = allImagesInFolder.findIndex(img => img.id === id);
+
+      setPreviewImages(allImagesInFolder);
+      setPreviewIndex(index);
+    } else {
+      // Normal file download
+      window.location.href = `${BASE_URL}/file/${id}?action=download`;
+    }
+  }
+}
   async function handleFetchErrors(response) {
     if (!response.ok) {
       let errMsg = `Request failed with status ${response.status}`;
@@ -351,7 +384,18 @@ const listProps = {
           onRenameSubmit={handleRenameSubmit}
         />
       )}
+      {previewIndex !== null && (
+  <ImagePreview 
+    images={previewImages}
+    currentIndex={previewIndex}
+    setCurrentIndex={setPreviewIndex}
+    onClose={() => setPreviewIndex(null)}
+    BASE_URL={BASE_URL}
+  />
+)}
     </div>
+
+    
   );
 }
 

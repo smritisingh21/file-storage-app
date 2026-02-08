@@ -28,10 +28,17 @@ function DirectoryView() {
   const [isUploading, setIsUploading] = useState(false); 
   const [activeContextMenu, setActiveContextMenu] = useState(null);
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
-  const [viewMode, setViewMode] = useState("list"); 
   const [searchQuery, setSearchQuery] = useState("");
-const [previewIndex, setPreviewIndex] = useState(null);
-const [previewImages, setPreviewImages] = useState([]);
+  const [previewIndex, setPreviewIndex] = useState(null);
+  const [previewImages, setPreviewImages] = useState([]);
+
+const [viewMode, setViewMode] = useState(() => {
+  const savedView = localStorage.getItem("memo-deck-view-mode");
+  return savedView ? savedView : "list";
+});
+useEffect(() => {
+  localStorage.setItem("memo-deck-view-mode", viewMode);
+}, [viewMode]);
 
 function handleRowClick(type, id) {
   if (type === "directory") {

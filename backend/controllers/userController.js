@@ -1,6 +1,8 @@
 import Directory from "../models/directorySchema.js";
 import User from "../models/UserSchema.js";
 import mongoose, { Types } from "mongoose";
+import crypto, { sign } from "node:crypto"
+export const secret = "SyncDriveSecret"
 
 export const register = async (req, res, next) => {
   const { name, email, password } = req.body;
@@ -62,7 +64,24 @@ export const login = async (req, res, next) => {
   if (!user) {
     return res.status(404).json({ error: "Invalid Credentials" });
   }
-  res.cookie("uid", user._id.toString(), {
+
+  const cookiePayload = JSON.stringify({
+    id : user._id,
+    expiry: Math.round(Date.now()/1000 + 100000),
+  })
+
+  //creating and sending siganture in cookie
+
+  const signature =crypto
+  .createHash('sha256')
+  .update(secret)
+  .update(cookiePayload)
+  .update(secret)
+  .digest("base64url");
+
+  const signedCookiePayload = `${Buffer.from(cookiePayload).toString("base64url")}.${signature}`
+
+  res.cookie("token", signedCookiePayload, {
     httpOnly: true,
     maxAge: 60 * 1000 * 60 * 24 * 7,
   });

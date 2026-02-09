@@ -13,6 +13,7 @@ function RenameModal({
     if (inputRef.current) {
       inputRef.current.focus();
       // Logic for selecting name but not extension
+
       const dotIndex = renameValue.lastIndexOf(".");
       if (renameType === "file" && dotIndex > 0) {
         inputRef.current.setSelectionRange(0, dotIndex);
@@ -26,7 +27,7 @@ function RenameModal({
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, renameType, renameValue]);
+  }, [onClose]);
 
   return (
     <div 

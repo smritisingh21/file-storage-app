@@ -8,9 +8,10 @@ import checkAuth from "./middlewares/authMiddleware.js";
 import connectDB from "./config/db.js";
 
 await connectDB();
+export const secret = "SyncDriveSecret"
 
 const app = express();
-app.use(cookieParser());
+app.use(cookieParser(secret));
 app.use(express.json());
 app.use(
   cors({

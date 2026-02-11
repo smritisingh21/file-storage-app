@@ -12,7 +12,6 @@ const connectDB = async () =>{
 
     }
 }
-
 process.on("SIGINT", async () => {
   await client.close();
   console.log("Database Disconnected!");

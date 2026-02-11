@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import directoryRoutes from "./routes/directoryRoutes.js";
 import fileRoutes from "./routes/fileRoutes.js";
@@ -8,6 +9,7 @@ import checkAuth from "./middlewares/authMiddleware.js";
 import connectDB from "./config/db.js";
 
 await connectDB();
+dotenv.config();
 export const secret = "SyncDriveSecret"
 
 const app = express();

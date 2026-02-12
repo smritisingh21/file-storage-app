@@ -2,18 +2,14 @@ import Directory from "../models/directorySchema.js";
 import User from "../models/UserSchema.js";
 import mongoose, { Types } from "mongoose";
 import crypto from 'node:crypto'
+import bcrypt from 'bcrypt'
 
-export const secret = "SyncDriveSecret"
 
 export const register = async (req, res, next) => {
   const { name, email, password } = req.body;
   const foundUser = await User.findOne({ email }).lean();
 
-  const hashedPwd = crypto
-  .createHash('sha-256')
-  .update(password)
-  .update(secret)
-  .digest('base64url');
+  const hashedPwd =await bcrypt.hash(password , 10);
 
   if (foundUser) {
     return res.status(409).json({
@@ -74,13 +70,8 @@ export const login = async (req, res, next) => {
     return res.status(404).json({ error: "Invalid Credentials" });
   }
 
-  const enteredPwd = crypto
-   .createHash('sha-256')
-  .update(password)
-  .update(secret)
-  .digest('base64url');
-
-  if(enteredPwd !== user.password ) {
+  const isPwdValid = bcrypt.compare(password , user.password)
+  if(!isPwdValid ) {
     return res.status(404).json({error : "Invalid credentials"})
   }
  
